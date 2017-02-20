@@ -80,10 +80,11 @@ type SimulationOptions
     function SimulationOptions()
         # optimal policy used for coordination table
         coordination_table_one_policy = true ## currently this is whether or not solve real time...
-        coordination_policy_filepath = "../data/qvalue_tables/optimal.jld"
+        table_filepath = joinpath(Pkg.dir("Coord"), "data", "qvalue_tables", "optimal.jld")
+        coordination_policy_filepath = table_filepath
 
         # ownship options
-        ownship_policy_filepath = "../data/qvalue_tables/optimal.jld"
+        ownship_policy_filepath = table_filepath
         is_ownship_policy_joint = true # {false = non-joint, true = joint}
 
         policy_name = "solQ"
@@ -91,7 +92,7 @@ type SimulationOptions
         ownship_action_selection = "average" # {best, worst, average}
  
         # intruder options
-        intruder_policy_filepath = "../data/qvalue_tables/optimal.jld"
+        intruder_policy_filepath = table_filepath
         is_intruder_policy_joint = true # {false = non-joint, true = joint}
 
         intruder_strategy = greedy_strategy
