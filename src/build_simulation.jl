@@ -163,12 +163,9 @@ Returns an enviornment object
 Return Value:
 - environment: an environment object
 =#
-function build_environment(; accept_command_line_options = true)
+function build_environment()
     # should instead gather options from cmd line
     options = SimulationOptions()
-    if accept_command_line_options
-        parse_command_line_options!(options)
-    end
     
     # build uavs and dynamics
     uavs = build_uavs(options)
@@ -333,112 +330,4 @@ function build_dynamics(options::SimulationOptions)
     pid_b_std_coc = options.pid_b_std_coc
     d = Dynamics(dt, dt_step, omega, pid_b_std, pid_b_std_coc, use_noise, m)
     return d
-end
-
-#=
-Description:
-Parses command line options and replaces default values
-in the options type with their values.
-
-Side Effects:
-- replaces default options with command line options if they exist
-=#
-function parse_command_line_options!(options::SimulationOptions)
-    parsed_options = Dict()
-    parsed_options["ownship_policy_filepath"] = nothing
-    parsed_options["is_ownship_policy_joint"] = nothing
-    parsed_options["ownship_action_selection"] = nothing
-    parsed_options["intruder_policy_filepath"] = nothing
-    parsed_options["is_intruder_policy_joint"] = nothing
-    parsed_options["intruder_action_selection"] = nothing
-
-    if length(ARGS) >= 1
-        parsed_options["ownship_policy_filepath"] = ARGS[1]
-    end
-
-    if length(ARGS) >= 2
-        parsed_options["is_ownship_policy_joint"] = ARGS[2]
-    end
-
-    if length(ARGS) >= 3
-        parsed_options["ownship_action_selection"] = ARGS[3]
-    end 
-
-    if length(ARGS) >= 4
-        parsed_options["intruder_policy_filepath"] = ARGS[4]
-    end 
-
-    if length(ARGS) >= 5
-        parsed_options["is_intruder_policy_joint"] = ARGS[5]
-    end
-
-    if length(ARGS) >= 6
-        parsed_options["intruder_action_selection"] = ARGS[6]
-    end 
-
-    # set the ownship_policy_filepath
-    filepath = parsed_options["ownship_policy_filepath"]
-    if filepath != nothing
-        options.ownship_policy_filepath = filepath
-    end
-
-    # set the ownship action type
-    act = parsed_options["is_ownship_policy_joint"]
-    if act != nothing
-        if act == 0
-	       options.is_ownship_policy_joint = false
-	   else
-	       options.is_ownship_policy_joint = true
-	   end
-    end
-
-    # set the ownship_action_selection
-    method_prefix = parsed_options["ownship_action_selection"]
-    if method_prefix != nothing
-        if method_prefix == "best" || method_prefix == "worst" || method_prefix == "average"
-            method = method_prefix
-            options.ownship_strategy = coordinated_strategy
-        elseif method_prefix == "base"
-            # method does not matter in this case
-            method = "base"
-            # set intruder to be greedy is ownship not coordinating
-            parsed_options["intruder_action_selection"] = "base"
-            options.ownship_strategy = greedy_strategy
-        else
-            throw(ArgumentError("invalid action selection method $(method_prefix)"))
-        end
-        options.ownship_action_selection = method
-    end
-
-    # set intruder filepath
-    filepath = parsed_options["intruder_policy_filepath"]
-    if filepath != nothing
-        options.intruder_policy_filepath = filepath
-    end
-
-    # set the intruder action type
-    act = parsed_options["is_intruder_policy_joint"]
-    if act != nothing
-        if act == 0
-	       options.is_intruder_policy_joint = false
-	   else
-	       options.is_intruder_policy_joint = true
-	   end
-    end
-
-    # set intruder action selection
-    method_prefix = parsed_options["intruder_action_selection"]
-    if method_prefix != nothing
-        if method_prefix == "best" || method_prefix == "worst" || method_prefix == "average"
-            method = method_prefix
-            options.intruder_strategy = coordinated_strategy
-        elseif method_prefix == "base"
-            # method does not matter in this case
-            method = "base"
-            options.intruder_strategy = greedy_strategy
-        else
-            throw(ArgumentError("invalid action selection method $(method_prefix)"))
-        end
-        options.intruder_action_selection = method
-    end
 end
